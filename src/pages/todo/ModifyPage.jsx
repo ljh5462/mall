@@ -18,4 +18,4 @@ const ModifyPage = ({tno}) => {
   )
 }
 
-export default ModifyPagey
+export default ModifyPage
