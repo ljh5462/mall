@@ -1,5 +1,5 @@
 import React from 'react'
-import AddComponents from "../../components/products/AddComponents"
+import AddComponent from "../../components/products/AddComponent"
 
 const AddPage = () => {
   return (
@@ -7,7 +7,7 @@ const AddPage = () => {
         <div className="text-3xl font-extrabold">
             Products Add Page
         </div>
-        <AddComponents/>
+        <AddComponent/>
     </div>
   )
 }
