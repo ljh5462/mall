@@ -4,6 +4,7 @@ import { getList } from "../../api/productsApi";
 import FetchingModal from "../common/FetchingModal";
 import { API_SERVER_HOST } from "../../api/todoApi";
 import PageComponent from "../common/PageComponent";
+import useCustomLogin from "../../hooks/useCustomLogin";
 
 const initState = {
     dtoList:[],
@@ -30,6 +31,8 @@ const ListComponent = () => {
     //for FetchingModal
     const [fetching, setFetching] = useState(false);
 
+    const {exceptionHandle} = useCustomLogin();
+
     useEffect(() => {
         setFetching(true);
 
@@ -37,7 +40,7 @@ const ListComponent = () => {
             console.log(data);
             setServerData(data);
             setFetching(false);
-        })
+        }).catch(err => exceptionHandle(err))
     }, [page, size, refresh])
 
   return (

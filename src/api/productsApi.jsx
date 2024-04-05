@@ -16,7 +16,7 @@ export const getList = async (pageParam) => {
     const {page, size} = pageParam;
 
     const res = await jwtAxios.get(`${host}/list`, {params : {page:page, size:size}});
-
+    console.log(res)
     return res.data;
 }
 
