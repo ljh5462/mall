@@ -4,6 +4,7 @@ import FetchingModal from "../common/FetchingModal";
 import { API_SERVER_HOST } from "../../api/todoApi";
 import useCustomMove from "../../hooks/useCustomMove";
 import ResultModal from "../common/ResultModal";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 const initState = {
     pno: 0,
@@ -19,12 +20,32 @@ const host = API_SERVER_HOST;
 const ModifyComponent = ({pno}) => {
 
     const [product, setProduct] = useState(initState);
-    const [fetching, setFetching] = useState(false);
-    const [result, setResult] = useState(null);
-
     const {moveToRead, moveToList} = useCustomMove();
-
+    // const [fetching, setFetching] = useState(false);
+    // const [result, setResult] = useState(null);
     const uploadRef = useRef();
+    
+
+    const query = useQuery({
+        queryKey: ['products', pno],
+        queryFn: () => getOne(pno),
+        option:{
+            staleTime: Infinity
+        }
+    })
+
+    const delMutation = useMutation({mutationFn: (pno) => deleteOne(pno)});
+
+    const modMutation = useMutation({mutationFn: (product) => putOne(pno, product)});
+
+    const queryClient = useQueryClient();
+
+    //절대 실행하면 안되는 무한 반복
+    useEffect(() => {
+        if(query.isSuccess){
+            setProduct(query.data);
+        }
+    }, [pno, query.data, query.isSuccess])
 
     const handleChangeProduct = (e) => {
         product[e.target.name] = e.target.value;
@@ -57,46 +78,61 @@ const ModifyComponent = ({pno}) => {
             formData.append("uploadFileNames", product.uploadFileNames[i]);
         }
 
-        //fetching
-        setFetching(true);
+        modMutation.mutate(formData);
 
-        putOne(pno, formData).then(data => {
-            setResult('Modified');
-            setFetching(false);
-        });
+        //fetching
+        // setFetching(true);
+
+        // putOne(pno, formData).then(data => {
+        //     setResult('Modified');
+        //     setFetching(false);
+        // });
     }
 
     const handleClickDelete = () => {
-        setFetching(true);
-        deleteOne(pno).then(data => {
-            setResult('Deleted');
-            setFetching(false);
-        })
+        delMutation.mutate(pno);
+        // setFetching(true);
+        // deleteOne(pno).then(data => {
+        //     setResult('Deleted');
+        //     setFetching(false);
+        // })
     }
 
     const closeModal = () => {
-        if(result === 'Modified'){
-            moveToRead(pno) // 조회 화면으로 이동
-        } else if(result === 'Deleted'){
-            moveToList({page:1});
+        if(delMutation.isSuccess){
+            queryClient.invalidateQueries(['products', pno]);
+            queryClient.invalidateQueries(['products/list']);
+            moveToList();
+            return;
         }
-        setResult(null);
+
+        if(modMutation.isSuccess){
+            queryClient.invalidateQueries(['products', pno]);
+            queryClient.invalidateQueries(['products/list']);
+            moveToRead(pno);
+        }
+        // if(result === 'Modified'){
+        //     moveToRead(pno) // 조회 화면으로 이동
+        // } else if(result === 'Deleted'){
+        //     moveToList({page:1});
+        // }
+        // setResult(null);
     }
 
-    useEffect(() => {
-        setFetching(true);
-        getOne(pno).then(data => {
-            setProduct(data);
-            setFetching(false);
-        })
-    }, [pno])
+    // useEffect(() => {
+    //     setFetching(true);
+    //     getOne(pno).then(data => {
+    //         setProduct(data);
+    //         setFetching(false);
+    //     })
+    // }, [pno])
   return (
     <div className="border-2 border-sky-200 mt-10 m-2 p-4">
         Product Modify Component
-        {fetching ? <FetchingModal/> : <></>}
-        {result ?
+        {query.isFetching || delMutation.isLoading || modMutation.isLoading ? <FetchingModal/> : <></>}
+        {delMutation.isSuccess || modMutation.isSuccess ?
             <ResultModal
-                title={`${result}`}
+                title={'처리결과'}
                 content={'정상적으로 처리되었습니다.'}
                 callbackFn={closeModal}
             />
@@ -182,7 +218,7 @@ const ModifyComponent = ({pno}) => {
             <button
                 type="button"
                 className="rounded p-4 m-2 text-xl w-32 text-white bg-red-500"
-                onClick={moveToList}
+                onClick={handleClickDelete}
             >Delete
             </button>
             <button
@@ -194,7 +230,7 @@ const ModifyComponent = ({pno}) => {
             <button
                 type="button"
                 className="rounded p-4 m-2 text-xl w-32 text-white bg-blue-500"
-                onClick={handleClickDelete}
+                onClick={moveToList}
             >
             List
             </button>

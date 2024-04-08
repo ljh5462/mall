@@ -5,6 +5,7 @@ import FetchingModal from "../common/FetchingModal";
 import { API_SERVER_HOST } from "../../api/todoApi";
 import PageComponent from "../common/PageComponent";
 import useCustomLogin from "../../hooks/useCustomLogin";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const initState = {
     dtoList:[],
@@ -25,27 +26,42 @@ const ListComponent = () => {
     
     const {page, size, refresh, moveToList, moveToRead} = useCustomMove();
 
+    const {moveToLoginReturn} = useCustomLogin();
+
+    const {isFetching, data, error, isError} = useQuery({
+        queryKey: ['products/list', {page,size, refresh}],
+        queryFn: () => getList({page,size}),
+        option: {staleTime: 1000 * 5}
+    })
+    
+    const handleClickPage = (pageParam) => {
+        moveToList(pageParam)
+    }
+
+    const serverData = data || initState;
+    
+
     //serverData 나중에 사용
-    const [serverData, setServerData] = useState(initState);
+    //const [serverData, setServerData] = useState(initState);
 
     //for FetchingModal
-    const [fetching, setFetching] = useState(false);
+    //const [fetching, setFetching] = useState(false);
 
-    const {exceptionHandle} = useCustomLogin();
+    //const {exceptionHandle} = useCustomLogin();
 
-    useEffect(() => {
-        setFetching(true);
+    // useEffect(() => {
+    //     setFetching(true);
 
-        getList({page, size}).then(data => {
-            console.log(data);
-            setServerData(data);
-            setFetching(false);
-        }).catch(err => exceptionHandle(err))
-    }, [page, size, refresh])
+    //     getList({page, size}).then(data => {
+    //         console.log(data);
+    //         setServerData(data);
+    //         setFetching(false);
+    //     }).catch(err => exceptionHandle(err))
+    // }, [page, size, refresh])
 
   return (
     <div className="border-2 border-blue-100 mt-10 mr-2 ml-2">
-        {fetching ? <FetchingModal/> : <></>}
+        {isFetching ? <FetchingModal/> : <></>}
         <div className="flex flex-wrap mx-auto p-6">
             {serverData.dtoList.map(product => 
                 <div
@@ -77,7 +93,7 @@ const ListComponent = () => {
                 </div>    
             )}
         </div>
-        <PageComponent serverData={serverData} movePage={moveToList}></PageComponent>
+        <PageComponent serverData={serverData} movePage={handleClickPage}></PageComponent>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import { postAdd } from "../../api/productsApi";
 import FetchingModal from "../common/FetchingModal";
 import ResultModal from "../common/ResultModal";
 import useCustomMove from "../../hooks/useCustomMove";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const initState = {
     pname: '',
@@ -13,19 +14,21 @@ const initState = {
 
 const AddComponent = () => {
     const [product, setProduct] = useState({...initState})
-    const [fetching, setFetching] = useState(false);
-    const [result, setResult] = useState(null)
+    // const [fetching, setFetching] = useState(false);
+    // const [result, setResult] = useState(null)
     const {moveToList} = useCustomMove();
     const uploadRef = useRef();
 
+    //입력값 처리
     const handleChangeProduct = (e) => {
         product[e.target.name] = e.target.value;
         setProduct({...product});
     }
 
+    const addMutation = useMutation({mutationFn: (product) => postAdd(product)}) //리액트 쿼리
+
     const handleClickAdd = (e) => {
         const files = uploadRef.current.files;
-
         const formData = new FormData();
 
         for(let i = 0; i < files.length; i++){
@@ -37,28 +40,32 @@ const AddComponent = () => {
         formData.append("pdesc", product.pdesc);
         formData.append("price", product.price);
 
-        console.log(formData);
+        addMutation.mutate(formData);
 
-        setFetching(true);
+        // setFetching(true);
 
-        postAdd(formData).then(data => {
-          setFetching(false);
-          setResult(data.result);
-        });
+        // postAdd(formData).then(data => {
+        //   setFetching(false);
+        //   setResult(data.result);
+        // });
     }
 
+    const queryClient = useQueryClient();
+
     const closeModal = () => { //ResultModal 종료
-      setResult(null);
+
+      queryClient.invalidateQueries("products/list"); //ListComponent에서 staleTime이 1분일 경우 1분을 넘지 않은 상태에서 등록시 조회되지않음
+
       moveToList({page:1});
     }
 
   return (
     <div className="border-2 border-sky-200 mt-10 m-2 p-4">
-        {fetching ? <FetchingModal/> : <></>}
-        {result ? 
+        {addMutation.isLoading ? <FetchingModal/> : <></>}
+        {addMutation.isSuccess ? 
         <ResultModal
           title={'Product Add Result'}
-          content={`${result}번 등록 완료`}
+          content={`Add Success ${addMutation.data.result}`}
           callbackFn={closeModal}
         />
          : <></>}
