@@ -2,28 +2,17 @@ import React, { useEffect, useMemo } from 'react'
 import useCustomLogin from "../../hooks/useCustomLogin"
 import { useDispatch, useSelector } from "react-redux";
 import { getCartItemsAsync } from "../../slices/cartSlice";
-import useCustomCart from "../../hooks/useCustomCars";
+import useCustomCart from "../../hooks/useCustomCart";
 import CartItemComponent from "../cart/CartItemComponent";
+import { useRecoilValue } from "recoil";
+import { cartTotalState } from "../../atoms/cartState";
 
 const CartComponent = () => {
     const {isLogin, loginState} = useCustomLogin();
 
-    const {refreshCart, cartItems, changeCart} = useCustomCart();
+    const {cartItems, changeCart} = useCustomCart();
 
-    const total = useMemo(() => {
-        let total = 0;
-
-        for(const item of cartItems){
-            total += item.price * item.qty
-        }
-        return total;
-    }, cartItems)
-
-    useEffect(() => {
-        if(isLogin){
-            refreshCart();
-        }
-    }, [isLogin])
+    const totalValue = useRecoilValue(cartTotalState);
   return (
     <div className="w-full">
         {isLogin ?
@@ -41,14 +30,14 @@ const CartComponent = () => {
                 <ul>
                     {cartItems.map(item =>
                     <CartItemComponent {...item}
-                    key={item.cinmo}
+                    key={item.cino} 
                     changeCart={changeCart}
                     email={loginState.email}
                     />)}
                 </ul>
             </div>
             <div className="text-2xl text-right font-extrabold">
-                TOTAL: {total}
+                TOTAL: {totalValue}
             </div>
         </div>
         :

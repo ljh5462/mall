@@ -14,8 +14,6 @@ const initState = {
 
 const AddComponent = () => {
     const [product, setProduct] = useState({...initState})
-    // const [fetching, setFetching] = useState(false);
-    // const [result, setResult] = useState(null)
     const {moveToList} = useCustomMove();
     const uploadRef = useRef();
 
@@ -41,13 +39,6 @@ const AddComponent = () => {
         formData.append("price", product.price);
 
         addMutation.mutate(formData);
-
-        // setFetching(true);
-
-        // postAdd(formData).then(data => {
-        //   setFetching(false);
-        //   setResult(data.result);
-        // });
     }
 
     const queryClient = useQueryClient();

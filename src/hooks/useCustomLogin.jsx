@@ -1,24 +1,37 @@
-import { useDispatch, useSelector } from "react-redux";
 import { Navigate, createSearchParams, useNavigate } from "react-router-dom"
-import { loginPostAsync, logout } from "../slices/loginSlice";
+import { useRecoilState, useResetRecoilState } from "recoil";
+import signinState from "../atoms/signinState";
+import { removeCookie, setCookie } from "../util/utilCookie";
+import { loginPost } from "../api/memberApi";
+import { cartState } from "../atoms/cartState";
 
 const useCustomLogin = () =>{
 
-    const navigate = useNavigate();
+    const navigate = useNavigate(); //로그인,로그아웃 후 페이지 이동
 
-    const dispath = useDispatch();
+    const [loginState, setLoginStage] = useRecoilState(signinState);
 
-    const loginState = useSelector(state => state.loginSlice); // 로그인 상태
+    const resetState = useResetRecoilState(signinState); // 로그인 초기화
+
+    const resetCartState = useResetRecoilState(cartState); // 장바구니 초기화
 
     const isLogin = loginState.email ? true : false; // 로그인 여부
 
-    const doLogin = async (loginParam) => { // 로그인 함수
-        const action = await dispath(loginPostAsync(loginParam));
-        return action.payload;
+    const doLogin = async (loginParam) => { // 로그인 함수(쿠키 저장, 로그인 결과 반환)
+        const result = await loginPost(loginParam);
+        saveAsCookie(result);
+        return result;
     }
 
-    const doLogout = () => { // 로그아웃 함수
-        dispath(logout());
+    const saveAsCookie = (data) => { // 쿠키 저장
+        setCookie("member", JSON.stringify(data), 1) //1일
+        setLoginStage(data);
+    }
+
+    const doLogout = () => { // 로그아웃 함수(쿠키삭제, 로그인, 장바구니 초기화) - 서버 거치지않음
+       removeCookie("member");
+       resetState();
+       resetCartState();
     }
 
     const moveToPath = (path) => { // 페이지 이동
@@ -55,7 +68,7 @@ const useCustomLogin = () =>{
         
     }
 
-    return {loginState, isLogin, doLogin, doLogout, moveToPath, moveToLogin, moveToLoginReturn, exceptionHandle}
+    return {loginState, isLogin, doLogin, doLogout, moveToPath, moveToLogin, moveToLoginReturn, exceptionHandle, saveAsCookie}
 }
 
 export default useCustomLogin;

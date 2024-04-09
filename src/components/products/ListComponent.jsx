@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import useCustomMove from "../../hooks/useCustomMove"
 import { getList } from "../../api/productsApi";
 import FetchingModal from "../common/FetchingModal";
 import { API_SERVER_HOST } from "../../api/todoApi";
 import PageComponent from "../common/PageComponent";
-import useCustomLogin from "../../hooks/useCustomLogin";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 const initState = {
     dtoList:[],
@@ -26,8 +25,6 @@ const ListComponent = () => {
     
     const {page, size, refresh, moveToList, moveToRead} = useCustomMove();
 
-    const {moveToLoginReturn} = useCustomLogin();
-
     const {isFetching, data, error, isError} = useQuery({
         queryKey: ['products/list', {page,size, refresh}],
         queryFn: () => getList({page,size}),
@@ -39,25 +36,6 @@ const ListComponent = () => {
     }
 
     const serverData = data || initState;
-    
-
-    //serverData 나중에 사용
-    //const [serverData, setServerData] = useState(initState);
-
-    //for FetchingModal
-    //const [fetching, setFetching] = useState(false);
-
-    //const {exceptionHandle} = useCustomLogin();
-
-    // useEffect(() => {
-    //     setFetching(true);
-
-    //     getList({page, size}).then(data => {
-    //         console.log(data);
-    //         setServerData(data);
-    //         setFetching(false);
-    //     }).catch(err => exceptionHandle(err))
-    // }, [page, size, refresh])
 
   return (
     <div className="border-2 border-blue-100 mt-10 mr-2 ml-2">

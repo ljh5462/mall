@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
-import { loginPost } from "../api/member";
+import { loginPost } from "../api/memberApi";
 import { getCookie, removeCookie, setCookie } from "../util/utilCookie";
 
 const initState = {
@@ -42,7 +42,6 @@ const loginSlice = createSlice({
     extraReducers: (builder) => {
         builder.addCase(loginPostAsync.fulfilled, (state, action) => {
             console.log('fulfilled');
-
             const payload = action.payload;
 
             //정상적인 로그인시에만 쿠키 저장

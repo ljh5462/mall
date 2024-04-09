@@ -15,16 +15,13 @@ const initState = {
     uploadFileNames: []
 }
 
-const host = API_SERVER_HOST;
+const host = API_SERVER_HOST; //이미지 주소 용도
 
 const ModifyComponent = ({pno}) => {
 
     const [product, setProduct] = useState(initState);
     const {moveToRead, moveToList} = useCustomMove();
-    // const [fetching, setFetching] = useState(false);
-    // const [result, setResult] = useState(null);
     const uploadRef = useRef();
-    
 
     const query = useQuery({
         queryKey: ['products', pno],
@@ -79,23 +76,10 @@ const ModifyComponent = ({pno}) => {
         }
 
         modMutation.mutate(formData);
-
-        //fetching
-        // setFetching(true);
-
-        // putOne(pno, formData).then(data => {
-        //     setResult('Modified');
-        //     setFetching(false);
-        // });
     }
 
     const handleClickDelete = () => {
         delMutation.mutate(pno);
-        // setFetching(true);
-        // deleteOne(pno).then(data => {
-        //     setResult('Deleted');
-        //     setFetching(false);
-        // })
     }
 
     const closeModal = () => {
@@ -111,21 +95,8 @@ const ModifyComponent = ({pno}) => {
             queryClient.invalidateQueries(['products/list']);
             moveToRead(pno);
         }
-        // if(result === 'Modified'){
-        //     moveToRead(pno) // 조회 화면으로 이동
-        // } else if(result === 'Deleted'){
-        //     moveToList({page:1});
-        // }
-        // setResult(null);
     }
 
-    // useEffect(() => {
-    //     setFetching(true);
-    //     getOne(pno).then(data => {
-    //         setProduct(data);
-    //         setFetching(false);
-    //     })
-    // }, [pno])
   return (
     <div className="border-2 border-sky-200 mt-10 m-2 p-4">
         Product Modify Component

@@ -1,6 +1,5 @@
 import React from 'react'
 import { API_SERVER_HOST } from "../../api/todoApi"
-import useCustomCart from "../../hooks/useCustomCars"
 
 const host = API_SERVER_HOST
 
